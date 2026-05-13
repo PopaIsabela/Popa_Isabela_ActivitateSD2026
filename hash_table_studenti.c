@@ -52,7 +52,6 @@ void inserareHashTable(HashTable ht, Student s) {
 	Nod* nou = (Nod*)malloc(sizeof(Nod));
 	nou->info = copiereStudent(s);
 	nou->next = ht.vector[pozitie];
-
 	ht.vector[pozitie] = nou;
 }
 
@@ -69,7 +68,6 @@ void afisareHashTable(HashTable ht) {
 		}
 		else {
 			Nod* temp = ht.vector[i];
-
 			while (temp != NULL) {
 				afisareStudent(temp->info);
 				temp = temp->next;
@@ -80,14 +78,12 @@ void afisareHashTable(HashTable ht) {
 
 Student* cautareStudent(HashTable ht, int id) {
 	int pozitie = functieHash(id, ht.dimensiune);
-
 	Nod* temp = ht.vector[pozitie];
 
 	while (temp != NULL) {
 		if (temp->info.id == id) {
 			return &(temp->info);
 		}
-
 		temp = temp->next;
 	}
 
@@ -158,6 +154,56 @@ float mediaGenerala(HashTable ht) {
 	return suma / nr;
 }
 
+/* FUNCTII NOI */
+
+int numarElementeBucket(HashTable ht, int pozitie) {
+	int nr = 0;
+
+	if (pozitie < 0 || pozitie >= ht.dimensiune) {
+		return 0;
+	}
+
+	Nod* temp = ht.vector[pozitie];
+
+	while (temp != NULL) {
+		nr++;
+		temp = temp->next;
+	}
+
+	return nr;
+}
+
+void afisareBucketMaxim(HashTable ht) {
+	int pozitieMaxima = 0;
+	int nrMaxim = 0;
+
+	for (int i = 0; i < ht.dimensiune; i++) {
+		int nr = numarElementeBucket(ht, i);
+
+		if (nr > nrMaxim) {
+			nrMaxim = nr;
+			pozitieMaxima = i;
+		}
+	}
+
+	printf("\nBucket-ul cu cele mai multe elemente este pozitia %d, cu %d elemente:\n",
+		pozitieMaxima, nrMaxim);
+
+	Nod* temp = ht.vector[pozitieMaxima];
+
+	while (temp != NULL) {
+		afisareStudent(temp->info);
+		temp = temp->next;
+	}
+}
+
+void afisareFactorIncarcare(HashTable ht) {
+	int nr = numarStudenti(ht);
+	float factor = (float)nr / ht.dimensiune;
+
+	printf("\nFactor de incarcare hash table: %.2f\n", factor);
+}
+
 void dezalocareHashTable(HashTable* ht) {
 	for (int i = 0; i < ht->dimensiune; i++) {
 		Nod* temp = ht->vector[i];
@@ -185,17 +231,26 @@ int main() {
 	Student s4 = { 134, "Rares", 7.80f };
 	Student s5 = { 145, "Ioana", 8.60f };
 
+	/* studenti adaugati pentru coliziuni */
+	Student s6 = { 111, "Daria", 9.10f };
+	Student s7 = { 121, "Alex", 7.95f };
+
 	inserareHashTable(ht, s1);
 	inserareHashTable(ht, s2);
 	inserareHashTable(ht, s3);
 	inserareHashTable(ht, s4);
 	inserareHashTable(ht, s5);
+	inserareHashTable(ht, s6);
+	inserareHashTable(ht, s7);
 
 	printf("Tabela hash initiala:\n");
 	afisareHashTable(ht);
 
 	printf("\nNumar studenti: %d\n", numarStudenti(ht));
 	printf("Media generala: %.2f\n", mediaGenerala(ht));
+
+	afisareFactorIncarcare(ht);
+	afisareBucketMaxim(ht);
 
 	int idCautat = 123;
 	Student* studentGasit = cautareStudent(ht, idCautat);
