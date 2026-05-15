@@ -52,6 +52,7 @@ void inserareHashTable(HashTable ht, Student s) {
 	Nod* nou = (Nod*)malloc(sizeof(Nod));
 	nou->info = copiereStudent(s);
 	nou->next = ht.vector[pozitie];
+
 	ht.vector[pozitie] = nou;
 }
 
@@ -68,6 +69,7 @@ void afisareHashTable(HashTable ht) {
 		}
 		else {
 			Nod* temp = ht.vector[i];
+
 			while (temp != NULL) {
 				afisareStudent(temp->info);
 				temp = temp->next;
@@ -84,6 +86,7 @@ Student* cautareStudent(HashTable ht, int id) {
 		if (temp->info.id == id) {
 			return &(temp->info);
 		}
+
 		temp = temp->next;
 	}
 
@@ -154,8 +157,6 @@ float mediaGenerala(HashTable ht) {
 	return suma / nr;
 }
 
-/* FUNCTII NOI */
-
 int numarElementeBucket(HashTable ht, int pozitie) {
 	int nr = 0;
 
@@ -204,6 +205,21 @@ void afisareFactorIncarcare(HashTable ht) {
 	printf("\nFactor de incarcare hash table: %.2f\n", factor);
 }
 
+HashTable redimensionareHashTable(HashTable ht) {
+	HashTable nou = initializareHashTable(ht.dimensiune * 2);
+
+	for (int i = 0; i < ht.dimensiune; i++) {
+		Nod* temp = ht.vector[i];
+
+		while (temp != NULL) {
+			inserareHashTable(nou, temp->info);
+			temp = temp->next;
+		}
+	}
+
+	return nou;
+}
+
 void dezalocareHashTable(HashTable* ht) {
 	for (int i = 0; i < ht->dimensiune; i++) {
 		Nod* temp = ht->vector[i];
@@ -230,8 +246,6 @@ int main() {
 	Student s3 = { 123, "Elena", 9.90f };
 	Student s4 = { 134, "Rares", 7.80f };
 	Student s5 = { 145, "Ioana", 8.60f };
-
-	/* studenti adaugati pentru coliziuni */
 	Student s6 = { 111, "Daria", 9.10f };
 	Student s7 = { 121, "Alex", 7.95f };
 
@@ -275,6 +289,15 @@ int main() {
 	printf("\nTabela hash dupa stergere:\n");
 	afisareHashTable(ht);
 
+	printf("\n\nHash table dupa redimensionare:\n");
+	HashTable htNou = redimensionareHashTable(ht);
+	afisareHashTable(htNou);
+
+	printf("\nStatistici dupa redimensionare:\n");
+	afisareFactorIncarcare(htNou);
+	afisareBucketMaxim(htNou);
+
+	dezalocareHashTable(&htNou);
 	dezalocareHashTable(&ht);
 
 	return 0;
