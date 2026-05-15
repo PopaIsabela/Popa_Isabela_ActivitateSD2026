@@ -78,6 +78,16 @@ void afisareArboreInordine(Nod* rad) // SRD
 	}
 }
 
+void afisareArborePostordine(Nod* rad) // SDR
+{
+	if (rad)
+	{
+		afisareArborePostordine(rad->st);
+		afisareArborePostordine(rad->dr);
+		afisareLibrarie(rad->info);
+	}
+}
+
 int calculNrCarti(Nod* rad)
 {
 	if (rad)
@@ -88,6 +98,57 @@ int calculNrCarti(Nod* rad)
 		return suma;
 	}
 	return 0;
+}
+
+int numarNoduri(Nod* rad)
+{
+	if (rad)
+	{
+		return 1 + numarNoduri(rad->st) + numarNoduri(rad->dr);
+	}
+	return 0;
+}
+
+int inaltimeArbore(Nod* rad)
+{
+	if (rad == NULL)
+	{
+		return 0;
+	}
+
+	int inaltimeStanga = inaltimeArbore(rad->st);
+	int inaltimeDreapta = inaltimeArbore(rad->dr);
+
+	if (inaltimeStanga > inaltimeDreapta)
+	{
+		return 1 + inaltimeStanga;
+	}
+	else
+	{
+		return 1 + inaltimeDreapta;
+	}
+}
+
+Nod* cautareDupaId(Nod* rad, int id)
+{
+	if (rad == NULL)
+	{
+		return NULL;
+	}
+
+	if (rad->info.id == id)
+	{
+		return rad;
+	}
+
+	if (id < rad->info.id)
+	{
+		return cautareDupaId(rad->st, id);
+	}
+	else
+	{
+		return cautareDupaId(rad->dr, id);
+	}
 }
 
 Librarie citireLibrarie(FILE* f)
@@ -106,9 +167,7 @@ Librarie citireLibrarie(FILE* f)
 			char buffer[100];
 			fscanf(f, "%s", buffer);
 
-			librarie.carti[i] =
-				(char*)malloc(strlen(buffer) + 1);
-
+			librarie.carti[i] = (char*)malloc(strlen(buffer) + 1);
 			strcpy(librarie.carti[i], buffer);
 		}
 	}
@@ -143,6 +202,31 @@ Nod* citireFisier(const char* numeFisier)
 	return arbore;
 }
 
+void dezalocareLibrarie(Librarie* librarie)
+{
+	for (int i = 0; i < librarie->nrCarti; i++)
+	{
+		free(librarie->carti[i]);
+	}
+
+	free(librarie->carti);
+	librarie->carti = NULL;
+	librarie->nrCarti = 0;
+}
+
+void dezalocareArbore(Nod** rad)
+{
+	if (*rad)
+	{
+		dezalocareArbore(&((*rad)->st));
+		dezalocareArbore(&((*rad)->dr));
+
+		dezalocareLibrarie(&((*rad)->info));
+		free(*rad);
+		*rad = NULL;
+	}
+}
+
 int main()
 {
 	Nod* arbore = citireFisier("librarii.txt");
@@ -150,7 +234,30 @@ int main()
 	printf("Afisare inordine:\n");
 	afisareArboreInordine(arbore);
 
+	printf("\nAfisare preordine:\n");
+	afisareArborePreordine(arbore);
+
+	printf("\nAfisare postordine:\n");
+	afisareArborePostordine(arbore);
+
 	printf("\nNumar total carti: %d\n", calculNrCarti(arbore));
+	printf("Numar librarii: %d\n", numarNoduri(arbore));
+	printf("Inaltime arbore: %d\n", inaltimeArbore(arbore));
+
+	int idCautat = 4;
+	Nod* gasit = cautareDupaId(arbore, idCautat);
+
+	if (gasit)
+	{
+		printf("\nLibraria cu id-ul %d a fost gasita:\n", idCautat);
+		afisareLibrarie(gasit->info);
+	}
+	else
+	{
+		printf("\nNu exista librarie cu id-ul %d.\n", idCautat);
+	}
+
+	dezalocareArbore(&arbore);
 
 	return 0;
 }
