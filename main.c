@@ -20,10 +20,8 @@ Angajat copiereAngajat(Angajat a) {
 	copie.id = a.id;
 	copie.salariu = a.salariu;
 	copie.bonus = a.bonus;
-
 	copie.nume = (char*)malloc((strlen(a.nume) + 1) * sizeof(char));
 	strcpy(copie.nume, a.nume);
-
 	return copie;
 }
 
@@ -181,11 +179,38 @@ Nod* cautareDupaId(Nod* cap, int id) {
 	return NULL;
 }
 
-void dezalocareVector(Angajat* vect, int n) {
-	for (int i = 0; i < n; i++) {
-		free(vect[i].nume);
+Angajat angajatBonusMaxim(Nod* cap) {
+	Angajat maxim = cap->info;
+
+	while (cap != NULL) {
+		if (cap->info.bonus > maxim.bonus) {
+			maxim = cap->info;
+		}
+		cap = cap->next;
 	}
-	free(vect);
+
+	return maxim;
+}
+
+void sortareVectorDupaSalariu(Angajat* vect, int n) {
+	for (int i = 0; i < n - 1; i++) {
+		for (int j = i + 1; j < n; j++) {
+			if (vect[i].salariu > vect[j].salariu) {
+				Angajat aux = vect[i];
+				vect[i] = vect[j];
+				vect[j] = aux;
+			}
+		}
+	}
+}
+
+void dezalocareVector(Angajat* vect, int n) {
+	if (vect != NULL) {
+		for (int i = 0; i < n; i++) {
+			free(vect[i].nume);
+		}
+		free(vect);
+	}
 }
 
 void dezalocareLista(Nod* cap) {
@@ -261,6 +286,10 @@ int main() {
 	printf("\nNumar angajati: %d\n", numarNoduri(cap));
 	printf("Salariu mediu: %.2f\n", salariuMediu(cap));
 
+	Angajat bonusMaxim = angajatBonusMaxim(cap);
+	printf("\nAngajatul cu bonusul maxim:\n");
+	afisareAngajat(bonusMaxim);
+
 	int idCautat = 2;
 	Nod* gasit = cautareDupaId(cap, idCautat);
 
@@ -284,6 +313,13 @@ int main() {
 		printf("V[%d] = %s\n", i, vect[i].nume);
 	}
 
+	sortareVectorDupaSalariu(vect, n);
+
+	printf("\nVector sortat dupa salariu:\n");
+	for (int i = 0; i < n; i++) {
+		afisareAngajat(vect[i]);
+	}
+
 	dezalocareVector(vect, n);
 
 	int nrFiltrati = 0;
@@ -302,6 +338,12 @@ int main() {
 
 	printf("\nLista citita din fisier:\n");
 	afisareLista(cap);
+
+	if (cap != NULL) {
+		Angajat bonusMaximFisier = angajatBonusMaxim(cap);
+		printf("\nAngajatul din fisier cu bonusul maxim:\n");
+		afisareAngajat(bonusMaximFisier);
+	}
 
 	salvareInFisier(cap, "angajatiOut.txt");
 
